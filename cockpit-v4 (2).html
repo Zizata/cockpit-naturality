@@ -1,0 +1,2483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naturality — Cockpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f1e8;
+    --bg-soft: #efeadd;
+    --bg-warm: #e8e0cc;
+    --card: #ffffff;
+    --card-hover: #faf7ee;
+    --line: #ddd3bd;
+    --line-soft: #ebe3d0;
+    --line-strong: #b8aa8a;
+    --ink: #1a1d2e;
+    --ink-mid: #4a4f70;
+    --ink-soft: #7a7e98;
+    --ink-faint: #a8acb8;
+    --accent: #6b3fa0;
+    --accent-soft: rgba(107, 63, 160, 0.08);
+    --green: #2c9970;
+    --amber: #c89a2a;
+    --red: #d94548;
+    --blue: #2e7dca;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Inter Tight', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    font-weight: 450;
+    line-height: 1.5;
+  }
+
+  .app {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 240px 1fr;
+    grid-template-areas: "topbar topbar" "sidebar content";
+  }
+
+  /* === TOPBAR === */
+  .topbar {
+    grid-area: topbar;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 34px; height: 34px;
+    background: var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--bg);
+    font-style: italic;
+  }
+  .brand-text .t {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: var(--ink);
+    letter-spacing: -0.3px;
+    font-weight: 600;
+  }
+  .brand-text .s {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+    font-weight: 500;
+  }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .sync-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-soft);
+    border-radius: 999px;
+    font-size: 11px;
+    color: var(--ink-mid);
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .sync-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  .sync-dot.loading { background: var(--amber); animation: pulse 1.5s infinite; }
+  .sync-dot.error { background: var(--red); }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .user-zone { display: flex; gap: 0; }
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--card);
+    margin-left: -8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    font-family: 'Fraunces', serif;
+    background: var(--ink-mid);
+  }
+  .avatar:first-child { margin-left: 0; }
+
+  /* === SIDEBAR === */
+  aside {
+    grid-area: sidebar;
+    background: var(--bg-soft);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+    padding: 24px 12px;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav-section { margin-bottom: 24px; }
+  .nav-section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    color: var(--ink-soft);
+    font-weight: 700;
+    margin-bottom: 10px;
+    padding: 0 12px;
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+    margin-bottom: 2px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-mid);
+  }
+  .nav-link:hover { background: var(--bg-warm); color: var(--ink); }
+  .nav-link.active {
+    background: var(--ink);
+    color: var(--bg);
+    font-weight: 600;
+  }
+  .nav-icon {
+    width: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+  .nav-badge {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--bg-warm);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    color: var(--ink-mid);
+  }
+  .nav-link.active .nav-badge { background: rgba(255,255,255,0.2); color: var(--bg); }
+  .nav-badge.live {
+    background: var(--red);
+    color: white;
+    animation: pulse 2s infinite;
+  }
+  .nav-link.disabled { opacity: 0.45; cursor: not-allowed; }
+  .nav-link.disabled:hover { background: transparent; color: var(--ink-mid); }
+
+  .nav-mode {
+    margin-top: auto;
+    padding: 12px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .nav-mode-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+  .nav-mode-value {
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .nav-mode-edit {
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  /* === CONTENT === */
+  main { grid-area: content; overflow-y: auto; background: var(--bg); }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* === PAGE HEADER === */
+  .page-header {
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+  }
+  .page-title {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: -0.8px;
+    line-height: 1;
+  }
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--ink-mid);
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  .page-subtitle strong { color: var(--accent); font-weight: 700; }
+  .page-body { padding: 32px 40px; }
+
+  /* === SEARCH === */
+  .search-section { margin-bottom: 32px; }
+  .search-input-wrap { position: relative; max-width: 600px; }
+  .search-input {
+    width: 100%;
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    padding: 14px 20px 14px 48px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .search-input::placeholder { color: var(--ink-soft); font-weight: 400; }
+  .search-icon {
+    position: absolute;
+    left: 18px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-soft);
+    font-size: 18px;
+  }
+  .search-kbd {
+    position: absolute;
+    right: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    background: var(--bg-soft);
+    padding: 3px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    font-weight: 600;
+  }
+  .filter-chips {
+    display: flex;
+    gap: 6px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--card);
+    color: var(--ink-mid);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chip.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+  .results-wrap { display: flex; flex-direction: column; gap: 28px; }
+  .result-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .result-group-name {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .result-group-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .result-group-meta {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+  }
+  .result-item {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .result-item:hover {
+    border-color: var(--accent);
+    background: var(--card-hover);
+  }
+  .result-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    font-weight: 700;
+    background: var(--bg-soft);
+    padding: 4px 7px;
+    border-radius: 4px;
+    min-width: 38px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .result-content { flex: 1; min-width: 0; }
+  .result-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .result-meta {
+    font-size: 12px;
+    color: var(--ink-mid);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  mark {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 700;
+  }
+  .empty, .loading-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-mid);
+  }
+  .empty-emoji, .loading-emoji { font-size: 36px; margin-bottom: 14px; opacity: 0.4; }
+  .empty-title, .loading-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .empty-text { font-size: 13px; max-width: 360px; margin: 0 auto; }
+  .loading-pulse {
+    display: inline-block;
+    width: 32px; height: 32px;
+    border: 3px solid var(--line);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 14px;
+  }
+  @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+  /* ═══ MEETING : LOBBY (avant démarrage) ═══ */
+  .lobby {
+    max-width: 720px;
+    margin: 20px auto;
+  }
+  .lobby-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 32px;
+    text-align: center;
+  }
+  .lobby-icon {
+    width: 64px; height: 64px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 18px;
+  }
+  .lobby-title {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .lobby-subtitle {
+    font-size: 14px;
+    color: var(--ink-mid);
+    margin-bottom: 24px;
+  }
+  .lobby-form {
+    text-align: left;
+    margin-bottom: 24px;
+  }
+  .form-section {
+    margin-bottom: 20px;
+  }
+  .form-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .text-input {
+    width: 100%;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    background: var(--card);
+    outline: none;
+    font-weight: 500;
+  }
+  .text-input:focus { border-color: var(--accent); }
+
+  .members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .member-card {
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    background: var(--card);
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .member-card:hover { border-color: var(--accent); }
+  .member-card.checked {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .member-checkbox {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .member-card.checked .member-checkbox {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .member-info { flex: 1; min-width: 0; }
+  .member-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .member-role {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .member-master-toggle {
+    margin-left: auto;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    cursor: pointer;
+    border: 1px solid var(--line);
+  }
+  .member-master-toggle.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .lobby-recap {
+    background: var(--bg-soft);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--ink-mid);
+  }
+  .lobby-recap strong { color: var(--ink); font-weight: 700; }
+
+  .btn {
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    font-family: inherit;
+    transition: all 0.12s;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .btn-primary:hover { background: var(--accent); }
+  .btn-primary:disabled { background: var(--ink-faint); cursor: not-allowed; }
+  .btn-ghost {
+    background: var(--card);
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn-ghost:hover { border-color: var(--ink-mid); }
+  .btn-danger {
+    background: var(--red);
+    color: white;
+  }
+  .btn-danger:hover { background: #b53436; }
+  .btn-sm { padding: 7px 12px; font-size: 12px; }
+
+  /* === MEETING LIVE === */
+  .meeting-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 24px;
+  }
+  .meeting-main { min-width: 0; }
+  .meeting-sidebar { 
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .meeting-status {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .meeting-status.viewer {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .meeting-status-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--ink);
+    color: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .meeting-status.viewer .meeting-status-icon { background: var(--accent); }
+  .meeting-status-text { flex: 1; min-width: 200px; }
+  .meeting-status-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .meeting-status-desc {
+    font-size: 11px;
+    color: var(--ink-mid);
+    margin-top: 1px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .meeting-title-row {
+    margin-bottom: 22px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .meeting-title-input {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: -0.6px;
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 4px 0;
+  }
+  .meeting-title-input:focus {
+    background: var(--card);
+    border-radius: 6px;
+    padding: 4px 10px;
+    margin-left: -10px;
+  }
+  .meeting-title-input[readonly] { cursor: default; }
+  .meeting-meta {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Topics nav */
+  .topics-nav {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 4px 0 16px;
+    margin-bottom: 8px;
+  }
+  .topic-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink-mid);
+    flex-shrink: 0;
+  }
+  .topic-pill:hover { border-color: var(--ink-mid); color: var(--ink); }
+  .topic-pill.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+  .topic-pill-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--bg-warm);
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+    color: var(--ink-mid);
+  }
+  .topic-pill.active .topic-pill-count { background: rgba(255,255,255,0.2); color: var(--bg); }
+  .add-topic-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1.5px dashed var(--line-strong);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-mid);
+    font-weight: 600;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+  .add-topic-btn:hover { 
+    border-color: var(--accent); 
+    color: var(--accent);
+    border-style: solid;
+  }
+
+  .topic-header {
+    margin-bottom: 22px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .topic-name-wrap { flex: 1; min-width: 280px; }
+  .topic-name {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 2px 0;
+  }
+  .topic-name:focus {
+    background: var(--card);
+    border-radius: 6px;
+    padding: 2px 10px;
+    margin-left: -10px;
+  }
+  .topic-name[readonly] { cursor: default; }
+  .topic-desc {
+    font-size: 13px;
+    color: var(--ink-mid);
+    margin-top: 4px;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+    font-family: inherit;
+    resize: none;
+    padding: 2px 0;
+  }
+  .topic-desc:focus {
+    background: var(--card);
+    border-radius: 6px;
+    padding: 4px 10px;
+    margin-left: -10px;
+  }
+  .topic-desc[readonly] { cursor: default; }
+  .topic-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .icon-btn {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    width: 34px; height: 34px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    color: var(--ink-mid);
+  }
+  .icon-btn:hover { border-color: var(--ink-mid); color: var(--ink); }
+  .icon-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+  /* Add card */
+  .add-card {
+    background: var(--card);
+    border: 1.5px dashed var(--line-strong);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .add-card:focus-within { 
+    border-color: var(--accent); 
+    border-style: solid;
+  }
+  .add-card-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .add-card-input::placeholder { color: var(--ink-soft); }
+  .add-btn {
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .add-btn:hover { background: var(--accent); }
+
+  /* Cards */
+  .cards-list { display: flex; flex-direction: column; gap: 8px; }
+  .card-item {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    position: relative;
+  }
+  .card-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--line);
+    border-radius: 3px 0 0 3px;
+  }
+  .card-item.status-idee::before { background: var(--blue); }
+  .card-item.status-encours::before { background: var(--amber); }
+  .card-item.status-valide::before { background: var(--green); }
+  .card-item.status-ecarte::before { background: var(--red); opacity: 0.4; }
+  .card-item.status-ecarte { opacity: 0.7; }
+  .card-item.just-added {
+    animation: flashIn 1s ease;
+  }
+  @keyframes flashIn {
+    0% { background: var(--accent-soft); transform: translateX(-8px); opacity: 0; }
+    100% { background: var(--card); transform: translateX(0); opacity: 1; }
+  }
+  .card-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    font-weight: 700;
+    background: var(--bg-soft);
+    padding: 3px 6px;
+    border-radius: 4px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.2px;
+    line-height: 1.3;
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 100%;
+  }
+  .card-title:focus {
+    background: var(--bg-soft);
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-left: -6px;
+  }
+  .card-title[readonly] { cursor: default; }
+  .card-author {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .card-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--ink-mid);
+    font-weight: 600;
+  }
+  .field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .field-input {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 3px 7px;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 600;
+    color: var(--ink);
+    outline: none;
+    min-width: 60px;
+    max-width: 140px;
+  }
+  .field-input:focus { border-color: var(--accent); background: var(--card); }
+  .field-input[readonly] { cursor: default; }
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .status-select {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 10px;
+    font-family: inherit;
+    font-weight: 700;
+    color: var(--ink);
+    outline: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .status-select[disabled] { cursor: not-allowed; opacity: 0.6; }
+  .card-item.status-idee .status-select { background: rgba(46, 125, 202, 0.12); border-color: var(--blue); color: var(--blue); }
+  .card-item.status-encours .status-select { background: rgba(200, 154, 42, 0.12); border-color: var(--amber); color: var(--amber); }
+  .card-item.status-valide .status-select { background: rgba(44, 153, 112, 0.12); border-color: var(--green); color: var(--green); }
+  .card-item.status-ecarte .status-select { background: rgba(217, 69, 72, 0.12); border-color: var(--red); color: var(--red); }
+  .delete-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--ink-soft);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .delete-btn:hover { background: rgba(217, 69, 72, 0.12); color: var(--red); }
+
+  /* === SIDE PANELS (activity / chat) === */
+  .side-panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .side-panel-head {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .side-panel-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .side-panel-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+  .side-panel-count {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  
+  /* Activity */
+  .activity-list {
+    padding: 8px 12px;
+    max-height: 280px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0;
+  }
+  .activity-item {
+    padding: 6px 4px;
+    border-bottom: 1px dashed var(--line-soft);
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .activity-item:first-child { border-bottom: none; }
+  .activity-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+    font-weight: 700;
+    margin-right: 6px;
+  }
+  .activity-who {
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .activity-empty {
+    padding: 24px 12px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  /* Chat */
+  .chat-panel { flex: 1; min-height: 280px; max-height: 50vh; }
+  .chat-list {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chat-msg {
+    background: var(--bg-soft);
+    border-radius: 8px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--accent);
+  }
+  .chat-msg-head {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    margin-bottom: 2px;
+  }
+  .chat-msg-author {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .chat-msg-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .chat-msg-text {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .chat-empty {
+    padding: 24px 12px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-style: italic;
+  }
+  .chat-input-wrap {
+    padding: 10px 12px;
+    border-top: 1px solid var(--line);
+    background: var(--bg-soft);
+    display: flex;
+    gap: 6px;
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ink);
+    outline: none;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-send-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .chat-send-btn:hover { background: #532f80; }
+
+  /* End meeting button */
+  .end-meeting-btn {
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .end-meeting-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* === MODAL === */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 29, 46, 0.6);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: 14px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .modal-close {
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .modal-close:hover { background: var(--bg-soft); }
+  .modal-body { padding: 22px; overflow-y: auto; flex: 1; }
+  .modal-footer {
+    padding: 14px 22px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: var(--bg-soft);
+  }
+  .form-field { margin-bottom: 14px; }
+  .form-field label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .form-field input, .form-field select {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    background: var(--card);
+    outline: none;
+    font-weight: 500;
+  }
+  .form-field input:focus, .form-field select:focus { border-color: var(--accent); }
+
+  /* Members editor */
+  .members-editor { margin-bottom: 12px; }
+  .member-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .member-row input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .member-row .remove-member {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-soft);
+    padding: 4px 8px;
+    font-size: 16px;
+    border-radius: 4px;
+  }
+  .member-row .remove-member:hover { color: var(--red); }
+
+  .saving-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .saving-indicator.show { display: flex; }
+  .saving-indicator .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  .saving-indicator.saving .dot { background: var(--amber); animation: pulse 1s infinite; }
+  .saving-indicator.error .dot { background: var(--red); }
+
+  @media (max-width: 1000px) {
+    .meeting-layout { grid-template-columns: 1fr; }
+    .meeting-sidebar { order: 2; }
+  }
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto 1fr;
+      grid-template-areas: "topbar" "sidebar" "content";
+    }
+    aside { border-right: none; border-bottom: 1px solid var(--line); padding: 12px; max-height: 200px; }
+    .nav-mode { display: none; }
+    .page-header { padding: 24px 20px 18px; }
+    .page-body { padding: 20px; }
+    .page-title { font-size: 24px; }
+    .result-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">n</div>
+      <div class="brand-text">
+        <div class="t">Cockpit</div>
+        <div class="s">Naturality · Geek'Festival 2027</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-pill">
+        <span class="sync-dot loading" id="syncDot"></span>
+        <span id="syncText">Connexion…</span>
+      </div>
+      <div class="user-zone" id="userZone"></div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="nav-section">
+      <div class="nav-section-label">Navigation</div>
+      <div class="nav-link active" data-page="search">
+        <div class="nav-icon">⌕</div>
+        <div>Recherche</div>
+        <div class="nav-badge" id="badge-search">—</div>
+      </div>
+      <div class="nav-link" data-page="meeting">
+        <div class="nav-icon">▦</div>
+        <div>Réunion</div>
+        <div class="nav-badge" id="badge-meeting">—</div>
+      </div>
+      <div class="nav-link" data-page="settings">
+        <div class="nav-icon">⚙</div>
+        <div>Paramètres</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">À venir</div>
+      <div class="nav-link disabled">
+        <div class="nav-icon">⊞</div><div>Dashboard</div>
+      </div>
+      <div class="nav-link disabled">
+        <div class="nav-icon">€</div><div>Budget</div>
+      </div>
+    </div>
+
+    <div class="nav-mode">
+      <div class="nav-mode-label">Identifiant</div>
+      <div class="nav-mode-value" id="userModeName">—</div>
+      <div class="nav-mode-edit" onclick="changeName()">Changer →</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- ═══ RECHERCHE ═══ -->
+    <div class="page active" id="page-search">
+      <div class="page-header">
+        <div class="page-title">Recherche universelle</div>
+        <div class="page-subtitle" id="searchSubtitle">Connexion…</div>
+      </div>
+      <div class="page-body">
+        <div class="search-section">
+          <div class="search-input-wrap">
+            <span class="search-icon">⌕</span>
+            <input class="search-input" type="text" id="searchInput" placeholder="Rechercher un stand, sponsor, bénévole…" autocomplete="off">
+            <span class="search-kbd">⌘K</span>
+          </div>
+          <div class="filter-chips" id="filterChips">
+            <div class="chip active" data-filter="all">Tout</div>
+            <div class="chip" data-filter="stands">Stands</div>
+            <div class="chip" data-filter="sponsors">Sponsors</div>
+            <div class="chip" data-filter="animations">Animations</div>
+            <div class="chip" data-filter="benevoles">Bénévoles</div>
+            <div class="chip" data-filter="taches">Tâches</div>
+            <div class="chip" data-filter="budget">Budget</div>
+          </div>
+        </div>
+        <div class="results-wrap" id="searchResults">
+          <div class="loading-state">
+            <div class="loading-pulse"></div>
+            <div class="loading-title">Lecture du Drive…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RÉUNION ═══ -->
+    <div class="page" id="page-meeting">
+      <div class="page-header">
+        <div class="page-title" id="meetingPageTitle">Salle de réunion</div>
+        <div class="page-subtitle" id="meetingPageSubtitle">Espace de travail collaboratif</div>
+      </div>
+      <div class="page-body" id="meetingBody">
+        <div class="loading-state">
+          <div class="loading-pulse"></div>
+          <div class="loading-title">Chargement…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PARAMÈTRES ═══ -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div class="page-title">Paramètres</div>
+        <div class="page-subtitle">Configuration locale de l'application</div>
+      </div>
+      <div class="page-body">
+        
+        <div style="max-width: 600px;">
+          <div class="form-section">
+            <div class="form-label">Ton prénom</div>
+            <input class="text-input" id="settingsName" placeholder="Ex: Baptiste" />
+            <div style="font-size: 11px; color: var(--ink-soft); margin-top: 6px;">Stocké uniquement sur cet appareil.</div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-label">Membres du bureau</div>
+            <div style="font-size: 12px; color: var(--ink-mid); margin-bottom: 12px;">Ces noms apparaîtront au démarrage de chaque réunion.</div>
+            <div class="members-editor" id="membersEditor"></div>
+            <button class="btn btn-ghost btn-sm" onclick="addMember()">+ Ajouter un membre</button>
+          </div>
+
+          <div style="margin-top: 24px;">
+            <button class="btn btn-primary" onclick="saveSettings()">Enregistrer</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL : Add Topic -->
+<div class="modal-overlay" id="addTopicModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Ajouter un sujet</div>
+      <button class="modal-close" onclick="closeAddTopic()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Nom du sujet</label>
+        <input id="newTopicName" placeholder="Ex: Communication, Bénévoles…" />
+      </div>
+      <div class="form-field">
+        <label>Type de cartes</label>
+        <select id="newTopicType">
+          <option value="simple">Simple — titre seul</option>
+          <option value="invites">Invités — titre + cachet</option>
+          <option value="sponsors">Sponsors — titre + montant + contact</option>
+          <option value="stands">Stands — titre + tarif + catégorie</option>
+          <option value="budget">Budget — titre + montant + type</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeAddTopic()">Annuler</button>
+      <button class="btn btn-primary btn-sm" onclick="confirmAddTopic()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL : End meeting -->
+<div class="modal-overlay" id="endMeetingModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Terminer la réunion</div>
+      <button class="modal-close" onclick="closeEndMeeting()">×</button>
+    </div>
+    <div class="modal-body" id="endMeetingBody">
+      <p style="font-size: 14px; color: var(--ink-mid); margin-bottom: 16px;">
+        En terminant la réunion :
+      </p>
+      <ul style="font-size: 13px; color: var(--ink); padding-left: 20px; line-height: 1.8;">
+        <li>Un <strong>brouillon Google Doc</strong> sera créé dans <code style="background:var(--bg-soft); padding:1px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px;">7. RÉUNIONS &gt; Anciennes réunions &gt; Brouillons</code></li>
+        <li>Ce brouillon contient <strong>tous les sujets, cartes, chat et activité</strong></li>
+        <li>La session active sera <strong>supprimée</strong> du système pour libérer la place</li>
+        <li>Tu pourras ensuite éditer le brouillon pour en faire un compte-rendu propre</li>
+      </ul>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeEndMeeting()">Annuler</button>
+      <button class="btn btn-danger btn-sm" id="endMeetingConfirmBtn" onclick="confirmEndMeeting()">Terminer & archiver</button>
+    </div>
+  </div>
+</div>
+
+<div class="saving-indicator" id="savingIndicator">
+  <span class="dot"></span>
+  <span id="savingText">Synchronisé</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONFIGURATION
+// ═══════════════════════════════════════════
+const API_URL = 'https://script.google.com/macros/s/AKfycbxp3Ch9lvOtu4uVLHZDR7r55nnxAy178gqZAfd7fsv4vltE2rw7he2I4Lgh18qDAt6F/exec';
+const AUTO_REFRESH_MS = 30000;
+const MEETING_POLL_MS = 4000;
+const SAVE_DEBOUNCE_MS = 1200;
+
+// ═══════════════════════════════════════════
+//  STATE GLOBAL
+// ═══════════════════════════════════════════
+let currentPage = 'search';
+let userName = null;
+let memberList = [];   // ["Baptiste", "Victor", "Théo"]
+
+// Search
+let searchData = {}, searchMeta = {}, currentSearchFilter = 'all';
+
+// Meeting
+let meetingState = null;       // null = pas de réunion / objet = en cours
+let activeTopicId = null;
+let isMaster = false;          // tu es le maître si userName === meetingState.master
+let saveTimer = null, isSaving = false;
+let meetingPollTimer = null;
+let justAddedCardId = null;    // pour anim
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function $(id) { return document.getElementById(id); }
+function normalize(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return String(s || '').replace(/"/g, '&quot;'); }
+function pad(n, len=3) { return String(n).padStart(len, '0'); }
+function uniqueId(prefix='id') { return prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+function nameInitial(name) { return (name||'?').trim().charAt(0).toUpperCase(); }
+function nameColor(name) {
+  const colors = ['#6b3fa0', '#2e7dca', '#e8722a', '#2c9970', '#c89a2a', '#d94548', '#3db8e8', '#4a4f70'];
+  let hash = 0;
+  for (const c of (name||'')) hash = (hash * 31 + c.charCodeAt(0)) | 0;
+  return colors[Math.abs(hash) % colors.length];
+}
+function timeOnly(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.floor(diff/1000);
+  if (s < 60) return `il y a ${s}s`;
+  const m = Math.floor(s/60);
+  if (m < 60) return `il y a ${m} min`;
+  return `il y a ${Math.floor(m/60)}h`;
+}
+function highlight(text, query) {
+  text = String(text || '');
+  if (!query) return text;
+  const nT = normalize(text), nQ = normalize(query);
+  const i = nT.indexOf(nQ);
+  if (i === -1) return text;
+  return text.substring(0,i) + '<mark>' + text.substring(i, i+query.length) + '</mark>' + text.substring(i+query.length);
+}
+function setSyncStatus(state, text) {
+  $('syncDot').className = 'sync-dot ' + (state === 'ok' ? '' : state);
+  $('syncText').textContent = text;
+}
+function showSaving(state) {
+  const el = $('savingIndicator'), txt = $('savingText');
+  if (state === 'saving') { el.className = 'saving-indicator saving show'; txt.textContent = 'Synchro…'; }
+  else if (state === 'saved') {
+    el.className = 'saving-indicator show'; txt.textContent = 'Synchronisé ✓';
+    setTimeout(() => el.classList.remove('show'), 1200);
+  } else if (state === 'error') {
+    el.className = 'saving-indicator error show'; txt.textContent = '⚠ Erreur';
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  STORAGE LOCAL (paramètres)
+// ═══════════════════════════════════════════
+function loadSettings() {
+  try {
+    userName = localStorage.getItem('cockpit-username') || null;
+    const m = localStorage.getItem('cockpit-members');
+    memberList = m ? JSON.parse(m) : ['Baptiste', 'Victor', 'Théo'];
+  } catch (e) { memberList = ['Baptiste', 'Victor', 'Théo']; }
+}
+function saveSettingsLocal() {
+  try {
+    if (userName) localStorage.setItem('cockpit-username', userName);
+    localStorage.setItem('cockpit-members', JSON.stringify(memberList));
+  } catch (e) {}
+}
+function changeName() {
+  const newName = prompt('Ton prénom :', userName || '');
+  if (newName && newName.trim()) {
+    userName = newName.trim();
+    saveSettingsLocal();
+    $('userModeName').textContent = userName;
+    renderUserAvatars();
+  }
+}
+
+// ═══════════════════════════════════════════
+//  USER AVATARS (topbar)
+// ═══════════════════════════════════════════
+function renderUserAvatars() {
+  const zone = $('userZone');
+  zone.innerHTML = memberList.slice(0, 4).map(m => 
+    `<div class="avatar" style="background:${nameColor(m)};" title="${escapeAttr(m)}">${nameInitial(m)}</div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════
+//  PARAMÈTRES (page)
+// ═══════════════════════════════════════════
+function renderSettings() {
+  $('settingsName').value = userName || '';
+  const ed = $('membersEditor');
+  ed.innerHTML = memberList.map((m, i) => `
+    <div class="member-row">
+      <input value="${escapeAttr(m)}" oninput="memberList[${i}] = this.value" placeholder="Prénom" />
+      <button class="remove-member" onclick="removeMember(${i})" title="Retirer">×</button>
+    </div>
+  `).join('');
+}
+function addMember() {
+  memberList.push('');
+  renderSettings();
+  // focus dernier
+  setTimeout(() => {
+    const inputs = $('membersEditor').querySelectorAll('input');
+    inputs[inputs.length - 1]?.focus();
+  }, 50);
+}
+function removeMember(idx) {
+  memberList.splice(idx, 1);
+  renderSettings();
+}
+function saveSettings() {
+  userName = $('settingsName').value.trim() || null;
+  memberList = memberList.map(m => (m||'').trim()).filter(m => m);
+  if (memberList.length === 0) memberList = ['Baptiste'];
+  saveSettingsLocal();
+  $('userModeName').textContent = userName || '—';
+  renderUserAvatars();
+  showSaving('saved');
+}
+
+// ═══════════════════════════════════════════
+//  NAVIGATION PAGES
+// ═══════════════════════════════════════════
+function setPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.nav-link[data-page]').forEach(l => {
+    if (l.dataset.page === page) l.classList.add('active');
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  $('page-' + page).classList.add('active');
+
+  if (page === 'meeting') {
+    refreshMeeting();
+    startMeetingPoll();
+  } else {
+    stopMeetingPoll();
+  }
+  if (page === 'settings') renderSettings();
+}
+document.querySelectorAll('.nav-link[data-page]').forEach(link => {
+  link.addEventListener('click', () => setPage(link.dataset.page));
+});
+
+// ═══════════════════════════════════════════
+//  PAGE RECHERCHE
+// ═══════════════════════════════════════════
+const TYPE_CONFIG = {
+  stands:     { label: "Stands",     titleField: 'Nom du stand',     metaFields: ['Catégorie', 'Type / Activité', 'Emplacement (zone)'] },
+  sponsors:   { label: "Sponsors",   titleField: 'Nom du sponsor',   metaFields: ['Statut', 'Niveau', 'Montant prévisionnel (€)'] },
+  animations: { label: "Animations", titleField: "Titre de l'animation", metaFields: ['Jour', 'Horaire début', 'Lieu / Zone'] },
+  benevoles:  { label: "Bénévoles",  titleField: 'Nom',              metaFields: ['Prénom', 'Poste principal', 'Statut'] },
+  taches:     { label: "Tâches",     titleField: 'Titre de la tâche', metaFields: ['Responsable', 'Priorité', 'Échéance'] },
+  budget:     { label: "Budget",     titleField: 'Poste budgétaire', metaFields: ['Catégorie', 'Type', 'Montant prévu (€)'] }
+};
+async function fetchSearch() {
+  setSyncStatus('loading', 'Sync…');
+  try {
+    const res = await fetch(API_URL + '?action=all');
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'API error');
+    searchData = json.data; searchMeta = json.meta || {};
+    const total = Object.values(searchData).reduce((s, arr) => s + arr.length, 0);
+    $('badge-search').textContent = total;
+    setSyncStatus('ok', new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}));
+    renderSearch();
+  } catch (err) {
+    setSyncStatus('error', 'Erreur');
+    $('searchResults').innerHTML = `<div class="empty"><div class="empty-emoji">⚠</div><div class="empty-title">Erreur de connexion</div><div class="empty-text">${escapeHtml(err.message)}</div></div>`;
+  }
+}
+function renderSearch() {
+  const q = $('searchInput').value.trim();
+  const grouped = {}; let total = 0;
+  Object.keys(TYPE_CONFIG).forEach(type => {
+    if (currentSearchFilter !== 'all' && currentSearchFilter !== type) return;
+    const items = searchData[type] || [];
+    const filtered = items.filter(item => {
+      if (!q) return true;
+      const nq = normalize(q);
+      return Object.values(item).some(v => normalize(v).includes(nq));
+    });
+    if (filtered.length > 0) { grouped[type] = filtered; total += filtered.length; }
+  });
+  if (q) $('searchSubtitle').innerHTML = `<strong>${total}</strong> résultat${total>1?'s':''} pour « ${escapeHtml(q)} »`;
+  else if (currentSearchFilter !== 'all') $('searchSubtitle').innerHTML = `<strong>${total}</strong> entrée${total>1?'s':''} dans ${TYPE_CONFIG[currentSearchFilter].label}`;
+  else {
+    const all = Object.values(searchData).reduce((s,arr) => s+arr.length, 0);
+    $('searchSubtitle').innerHTML = `<strong>${all}</strong> entrées indexées depuis le Drive · auto-refresh actif`;
+  }
+  if (total === 0) {
+    $('searchResults').innerHTML = `<div class="empty"><div class="empty-emoji">⌕</div><div class="empty-title">Aucun résultat</div><div class="empty-text">${q ? "Essaie un autre mot-clé." : "Cette catégorie est vide pour le moment."}</div></div>`;
+    return;
+  }
+  let html = '';
+  Object.keys(TYPE_CONFIG).forEach(type => {
+    if (!grouped[type]) return;
+    const cfg = TYPE_CONFIG[type];
+    const meta = searchMeta[type];
+    const metaTxt = meta && meta.modifiedTime ? `Modifié ${timeAgo(meta.modifiedTime)} par ${escapeHtml(meta.modifiedBy)}` : '';
+    html += `<div class="result-group">
+      <div class="result-group-head">
+        <span class="result-group-name">${cfg.label}</span>
+        <span class="result-group-count">${grouped[type].length}</span>
+        <span class="result-group-meta">${metaTxt}</span>
+      </div>
+      <div class="result-grid">
+        ${grouped[type].map((item, idx) => {
+          const title = item[cfg.titleField] || '(sans nom)';
+          const m = cfg.metaFields.map(f => item[f]).filter(v => v !== '' && v !== null && v !== undefined).join(' · ');
+          const ref = item['#'] || (idx+1);
+          return `<div class="result-item">
+            <div class="result-num">#${pad(ref)}</div>
+            <div class="result-content">
+              <div class="result-title">${highlight(title, q)}</div>
+              <div class="result-meta">${highlight(m || '—', q)}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  $('searchResults').innerHTML = html;
+}
+$('searchInput').addEventListener('input', renderSearch);
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentSearchFilter = chip.dataset.filter;
+    renderSearch();
+  });
+});
+setInterval(() => {
+  if (currentPage !== 'search') return;
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  fetchSearch();
+}, AUTO_REFRESH_MS);
+
+// ═══════════════════════════════════════════
+//  PAGE RÉUNION
+// ═══════════════════════════════════════════
+const TOPIC_MODELS = {
+  invites: { fields: [{ key: 'cachet', label: 'Cachet', placeholder: '€' }] },
+  sponsors: { fields: [{ key: 'montant', label: 'Montant', placeholder: '€' }, { key: 'contact', label: 'Contact', placeholder: 'Nom' }] },
+  stands: { fields: [{ key: 'tarif', label: 'Tarif', placeholder: '€/m²' }, { key: 'categorie', label: 'Catégorie', placeholder: 'Pro / Asso' }] },
+  budget: { fields: [{ key: 'montant', label: 'Montant', placeholder: '€' }, { key: 'type', label: 'Type', placeholder: 'Dépense / Recette' }] },
+  simple: { fields: [] }
+};
+const DEFAULT_TOPICS = [
+  { id: 'budget', name: 'Budget', desc: 'Faire le point sur recettes/dépenses, valider le budget mis à jour.', type: 'budget', cards: [] },
+  { id: 'stands', name: 'Stands', desc: 'Grille tarifaire 2027 et conditions de gratuité.', type: 'stands', cards: [] },
+  { id: 'invites', name: 'Invités', desc: 'Wishlist des invités, priorités à contacter.', type: 'invites', cards: [] },
+  { id: 'sponsors', name: 'Sponsors', desc: 'État du démarchage et nouveaux sponsors.', type: 'sponsors', cards: [] }
+];
+
+async function refreshMeeting() {
+  try {
+    const res = await fetch(API_URL + '?action=meeting');
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    const state = json.state;
+    
+    if (!state || !state.started) {
+      meetingState = null;
+      isMaster = false;
+      $('badge-meeting').textContent = '—';
+      $('badge-meeting').classList.remove('live');
+      renderMeetingLobby();
+    } else {
+      meetingState = state;
+      isMaster = (userName === state.master);
+      $('badge-meeting').textContent = 'LIVE';
+      $('badge-meeting').classList.add('live');
+      if (!activeTopicId || !state.topics.find(t => t.id === activeTopicId)) {
+        activeTopicId = state.topics[0]?.id || null;
+      }
+      renderMeetingLive();
+    }
+  } catch (err) {
+    $('meetingBody').innerHTML = `<div class="empty"><div class="empty-emoji">⚠</div><div class="empty-title">Connexion impossible</div><div class="empty-text">${escapeHtml(err.message)}</div></div>`;
+  }
+}
+
+// ═══════════ LOBBY (avant démarrage) ═══════════
+let lobbyPresents = new Set();
+let lobbyMaster = null;
+function renderMeetingLobby() {
+  $('meetingPageTitle').textContent = 'Salle de réunion';
+  $('meetingPageSubtitle').textContent = 'Aucune réunion en cours. Démarre-en une pour permettre la collaboration.';
+  
+  // Reset si pas init
+  if (lobbyPresents.size === 0 && userName) lobbyPresents.add(userName);
+  if (!lobbyMaster && userName) lobbyMaster = userName;
+  
+  const html = `
+    <div class="lobby">
+      <div class="lobby-card">
+        <div class="lobby-icon">▦</div>
+        <div class="lobby-title">Démarrer une réunion</div>
+        <div class="lobby-subtitle">Coche les présents et désigne le maître de réunion.</div>
+        
+        <div class="lobby-form">
+          <div class="form-section">
+            <div class="form-label">Titre de la réunion</div>
+            <input class="text-input" id="lobbyTitle" value="Réunion bureau · ${new Date().toLocaleDateString('fr-FR')}" />
+          </div>
+          
+          <div class="form-section">
+            <div class="form-label">Membres présents · Maître désigné par <strong style="color:var(--accent);">★</strong></div>
+            <div class="members-grid">
+              ${memberList.map(m => {
+                const checked = lobbyPresents.has(m);
+                const isMasterMember = lobbyMaster === m;
+                return `
+                  <div class="member-card ${checked ? 'checked' : ''}" onclick="toggleLobbyPresent('${escapeAttr(m)}')">
+                    <div class="member-checkbox">${checked ? '✓' : ''}</div>
+                    <div class="member-info">
+                      <div class="member-name">${escapeHtml(m)}</div>
+                      <div class="member-role">${m === userName ? "C'est toi" : 'Membre'}</div>
+                    </div>
+                    <div class="member-master-toggle ${isMasterMember ? 'active' : ''}" 
+                      onclick="event.stopPropagation(); setLobbyMaster('${escapeAttr(m)}')" 
+                      title="Désigner comme maître">★</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <div style="font-size: 11px; color: var(--ink-soft); margin-top: 10px;">
+              Liste modifiable dans <a href="#" onclick="event.preventDefault(); setPage('settings');" style="color:var(--accent); font-weight:600;">Paramètres</a>.
+            </div>
+          </div>
+        </div>
+
+        <div class="lobby-recap">
+          <strong>${lobbyPresents.size}</strong> présent${lobbyPresents.size>1?'s':''} · 
+          Maître : <strong>${escapeHtml(lobbyMaster || '—')}</strong>
+        </div>
+
+        <button class="btn btn-primary" id="lobbyStartBtn" onclick="startMeeting()" 
+          ${(!lobbyMaster || !lobbyPresents.has(lobbyMaster)) ? 'disabled' : ''}>
+          Démarrer la réunion →
+        </button>
+      </div>
+    </div>
+  `;
+  $('meetingBody').innerHTML = html;
+}
+window.toggleLobbyPresent = function(name) {
+  if (lobbyPresents.has(name)) {
+    lobbyPresents.delete(name);
+    if (lobbyMaster === name) lobbyMaster = null;
+  } else {
+    lobbyPresents.add(name);
+  }
+  renderMeetingLobby();
+};
+window.setLobbyMaster = function(name) {
+  lobbyMaster = name;
+  lobbyPresents.add(name);
+  renderMeetingLobby();
+};
+
+async function startMeeting() {
+  if (!lobbyMaster || !lobbyPresents.has(lobbyMaster)) return;
+  if (lobbyMaster !== userName) {
+    if (!confirm(`Tu es ${userName} mais tu désignes ${lobbyMaster} comme maître. Il sera le seul à pouvoir éditer. Confirmer ?`)) return;
+  }
+  
+  const title = $('lobbyTitle').value.trim() || 'Réunion';
+  const sessionId = new Date().toISOString().slice(0,10) + '-' + Date.now().toString(36);
+  
+  meetingState = {
+    sessionId,
+    started: true,
+    startedAt: new Date().toISOString(),
+    startedBy: userName,
+    meetingTitle: title,
+    master: lobbyMaster,
+    presents: Array.from(lobbyPresents),
+    topics: JSON.parse(JSON.stringify(DEFAULT_TOPICS)),
+    chat: [],
+    activity: []
+  };
+  isMaster = (userName === lobbyMaster);
+  activeTopicId = meetingState.topics[0]?.id || null;
+  
+  addActivity('a démarré la réunion');
+  
+  showSaving('saving');
+  await doSave();
+  await refreshMeeting();
+}
+
+// ═══════════ LIVE ═══════════
+function renderMeetingLive() {
+  $('meetingPageTitle').textContent = meetingState.meetingTitle || 'Réunion en cours';
+  const presentsTxt = (meetingState.presents || []).map(p => 
+    p === meetingState.master ? `<strong>${escapeHtml(p)} ★</strong>` : escapeHtml(p)
+  ).join(' · ');
+  $('meetingPageSubtitle').innerHTML = `${presentsTxt} · Démarrée à ${timeOnly(meetingState.startedAt)}`;
+  
+  const statusClass = isMaster ? '' : 'viewer';
+  const statusIcon = isMaster ? '✎' : '👁';
+  const statusTitle = isMaster ? 'Vous pilotez la réunion' : `Lecture seule · ${meetingState.master} pilote`;
+  const statusDesc = isMaster 
+    ? `Modifications enregistrées toutes les ${SAVE_DEBOUNCE_MS/1000}s · Tout le monde voit en direct`
+    : `Rafraîchissement toutes les ${MEETING_POLL_MS/1000}s · Pense-bête disponible à droite`;
+  
+  const html = `
+    <div class="meeting-status ${statusClass}">
+      <div class="meeting-status-icon">${statusIcon}</div>
+      <div class="meeting-status-text">
+        <div class="meeting-status-title">${statusTitle}</div>
+        <div class="meeting-status-desc">${statusDesc}</div>
+      </div>
+    </div>
+
+    <div class="meeting-layout">
+      <div class="meeting-main">
+        <div class="meeting-title-row">
+          <input class="meeting-title-input" id="meetingTitleInput" 
+            value="${escapeAttr(meetingState.meetingTitle)}" 
+            ${isMaster ? '' : 'readonly'} />
+          <div class="meeting-meta">
+            ID ${meetingState.sessionId} · ${meetingState.topics.length} sujet${meetingState.topics.length>1?'s':''} · ${(meetingState.chat||[]).length} message${(meetingState.chat||[]).length>1?'s':''} dans le pense-bête
+          </div>
+        </div>
+
+        <div class="topics-nav" id="topicsNav"></div>
+        <div id="topicContent"></div>
+      </div>
+
+      <div class="meeting-sidebar">
+        <div class="side-panel">
+          <div class="side-panel-head">
+            <span class="side-panel-dot"></span>
+            <span class="side-panel-title">Activité</span>
+            <span class="side-panel-count">${(meetingState.activity||[]).length}</span>
+          </div>
+          <div class="activity-list" id="activityList"></div>
+        </div>
+
+        <div class="side-panel chat-panel">
+          <div class="side-panel-head">
+            <span class="side-panel-dot"></span>
+            <span class="side-panel-title">💬 Pense-bête</span>
+            <span class="side-panel-count">${(meetingState.chat||[]).length}</span>
+          </div>
+          <div class="chat-list" id="chatList"></div>
+          <div class="chat-input-wrap">
+            <input class="chat-input" id="chatInput" placeholder="Note rapide… (Entrée)" />
+            <button class="chat-send-btn" onclick="sendChat()" title="Envoyer">↵</button>
+          </div>
+        </div>
+
+        ${isMaster ? `
+          <button class="end-meeting-btn" onclick="openEndMeeting()">
+            🏁 Terminer la réunion
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+  $('meetingBody').innerHTML = html;
+  
+  // Listeners
+  if (isMaster) {
+    $('meetingTitleInput').addEventListener('input', (e) => {
+      meetingState.meetingTitle = e.target.value;
+      scheduleSave();
+    });
+  }
+  $('chatInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendChat();
+  });
+  
+  renderTopicsNav();
+  renderActiveTopic();
+  renderActivityList();
+  renderChatList();
+}
+
+function renderTopicsNav() {
+  const nav = $('topicsNav');
+  nav.innerHTML = meetingState.topics.map(t => `
+    <div class="topic-pill ${t.id === activeTopicId ? 'active' : ''}" onclick="setActiveTopic('${t.id}')">
+      <span>${escapeHtml(t.name)}</span>
+      <span class="topic-pill-count">${(t.cards || []).length}</span>
+    </div>
+  `).join('') + (isMaster ? `<button class="add-topic-btn" onclick="openAddTopic()">+ Sujet</button>` : '');
+}
+
+function renderActiveTopic() {
+  const topic = meetingState.topics.find(t => t.id === activeTopicId);
+  const container = $('topicContent');
+  if (!topic) {
+    container.innerHTML = `<div class="empty"><div class="empty-emoji">▦</div><div class="empty-title">Aucun sujet</div></div>`;
+    return;
+  }
+  const model = TOPIC_MODELS[topic.type] || TOPIC_MODELS.simple;
+  
+  container.innerHTML = `
+    <div class="topic-header">
+      <div class="topic-name-wrap">
+        <input class="topic-name" value="${escapeAttr(topic.name)}" ${isMaster ? '' : 'readonly'}
+          oninput="updateTopic('${topic.id}', 'name', this.value)" />
+        <textarea class="topic-desc" rows="2" placeholder="Description…" ${isMaster ? '' : 'readonly'}
+          oninput="updateTopic('${topic.id}', 'desc', this.value)">${escapeHtml(topic.desc || '')}</textarea>
+      </div>
+      ${isMaster ? `<div class="topic-actions"><button class="icon-btn danger" onclick="deleteTopic('${topic.id}')" title="Supprimer">🗑</button></div>` : ''}
+    </div>
+
+    ${isMaster ? `
+      <div class="add-card">
+        <input class="add-card-input" id="newCardInput" placeholder="Ajouter un élément… (entrée pour valider)" />
+        <button class="add-btn" onclick="addCard('${topic.id}')">+</button>
+      </div>
+    ` : ''}
+    
+    <div class="cards-list">
+      ${(topic.cards || []).length === 0 ? `
+        <div class="empty" style="padding: 32px 20px;">
+          <div class="empty-emoji">✦</div>
+          <div class="empty-title">${isMaster ? 'Liste vide' : 'En attente'}</div>
+          <div class="empty-text">${isMaster ? 'Tape un nom et appuie sur Entrée.' : "Le maître n'a pas encore ajouté de carte."}</div>
+        </div>
+      ` : (topic.cards || []).map((c, idx) => renderCard(topic, c, idx, model)).join('')}
+    </div>
+  `;
+  
+  if (isMaster) {
+    const input = $('newCardInput');
+    input?.addEventListener('keypress', (e) => { if (e.key === 'Enter') addCard(topic.id); });
+  }
+}
+
+function renderCard(topic, card, idx, model) {
+  const ro = isMaster ? '' : 'readonly';
+  const dis = isMaster ? '' : 'disabled';
+  const flash = (card.id === justAddedCardId) ? 'just-added' : '';
+  return `
+    <div class="card-item status-${card.status || 'idee'} ${flash}">
+      <div class="card-num">#${pad(idx+1)}</div>
+      <div class="card-body">
+        <input class="card-title" value="${escapeAttr(card.title)}" ${ro}
+          oninput="updateCard('${topic.id}', '${card.id}', 'title', this.value)" placeholder="Titre…" />
+        ${model.fields.length > 0 ? `
+          <div class="card-fields">
+            ${model.fields.map(f => `
+              <div class="field">
+                <span class="field-label">${f.label}:</span>
+                <input class="field-input" value="${escapeAttr(card.fields?.[f.key] || '')}" ${ro}
+                  oninput="updateCardField('${topic.id}', '${card.id}', '${f.key}', this.value)"
+                  placeholder="${f.placeholder || ''}" />
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        ${card.addedBy ? `<div class="card-author">Ajouté par ${escapeHtml(card.addedBy)} · ${timeOnly(card.addedAt)}</div>` : ''}
+      </div>
+      <div class="card-actions">
+        <select class="status-select" ${dis} onchange="updateCard('${topic.id}', '${card.id}', 'status', this.value)">
+          <option value="idee" ${card.status === 'idee' ? 'selected' : ''}>Idée</option>
+          <option value="encours" ${card.status === 'encours' ? 'selected' : ''}>En cours</option>
+          <option value="valide" ${card.status === 'valide' ? 'selected' : ''}>Validé</option>
+          <option value="ecarte" ${card.status === 'ecarte' ? 'selected' : ''}>Écarté</option>
+        </select>
+        ${isMaster ? `<button class="delete-btn" onclick="deleteCard('${topic.id}', '${card.id}')" title="Supprimer">×</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderActivityList() {
+  const el = $('activityList');
+  const activity = (meetingState.activity || []).slice(-30);
+  if (activity.length === 0) {
+    el.innerHTML = `<div class="activity-empty">Pas encore d'activité</div>`;
+    return;
+  }
+  el.innerHTML = activity.map(ev => `
+    <div class="activity-item">
+      <span class="activity-time">${timeOnly(ev.time)}</span>
+      <span class="activity-who" style="color:${nameColor(ev.who)}">${escapeHtml(ev.who)}</span>
+      ${escapeHtml(ev.what)}
+    </div>
+  `).join('');
+}
+
+function renderChatList() {
+  const el = $('chatList');
+  const chat = meetingState.chat || [];
+  if (chat.length === 0) {
+    el.innerHTML = `<div class="chat-empty">Aucun message · Tape une idée pour démarrer.</div>`;
+    return;
+  }
+  el.innerHTML = chat.map(m => `
+    <div class="chat-msg" style="border-left-color:${nameColor(m.author)};">
+      <div class="chat-msg-head">
+        <span class="chat-msg-author" style="color:${nameColor(m.author)}">${escapeHtml(m.author)}</span>
+        <span class="chat-msg-time">${timeOnly(m.time)}</span>
+      </div>
+      <div class="chat-msg-text">${escapeHtml(m.text)}</div>
+    </div>
+  `).join('');
+  // Scroll en bas
+  el.scrollTop = el.scrollHeight;
+}
+
+// ═══════════════════════════════════════════
+//  MEETING ACTIONS
+// ═══════════════════════════════════════════
+window.setActiveTopic = function(id) {
+  activeTopicId = id;
+  renderTopicsNav();
+  renderActiveTopic();
+};
+
+window.updateTopic = function(topicId, key, value) {
+  if (!isMaster) return;
+  const t = meetingState.topics.find(t => t.id === topicId);
+  if (!t) return;
+  t[key] = value;
+  if (key === 'name') {
+    const nav = $('topicsNav');
+    const pills = nav.querySelectorAll('.topic-pill');
+    pills.forEach(p => {
+      if (p.getAttribute('onclick')?.includes(topicId)) {
+        const span = p.querySelector('span');
+        if (span) span.textContent = value;
+      }
+    });
+  }
+  scheduleSave();
+};
+
+window.addCard = function(topicId) {
+  if (!isMaster) return;
+  const input = $('newCardInput');
+  if (!input) return;
+  const title = input.value.trim();
+  if (!title) { input.focus(); return; }
+  const t = meetingState.topics.find(t => t.id === topicId);
+  if (!t) return;
+  if (!t.cards) t.cards = [];
+  const newCard = { 
+    id: uniqueId('c'), title, status: 'idee', fields: {},
+    addedBy: userName, addedAt: new Date().toISOString()
+  };
+  t.cards.push(newCard);
+  justAddedCardId = newCard.id;
+  input.value = '';
+  addActivity(`a ajouté "${title}" dans ${t.name}`);
+  scheduleSave();
+  renderActiveTopic();
+  renderTopicsNav();
+  setTimeout(() => { justAddedCardId = null; $('newCardInput')?.focus(); }, 1000);
+};
+
+window.updateCard = function(topicId, cardId, key, value) {
+  if (!isMaster) return;
+  const t = meetingState.topics.find(t => t.id === topicId);
+  if (!t) return;
+  const c = t.cards.find(c => c.id === cardId);
+  if (!c) return;
+  c[key] = value;
+  if (key === 'status') {
+    addActivity(`a changé "${c.title}" → ${value}`);
+    renderActiveTopic();
+  }
+  scheduleSave();
+};
+
+window.updateCardField = function(topicId, cardId, fieldKey, value) {
+  if (!isMaster) return;
+  const t = meetingState.topics.find(t => t.id === topicId);
+  if (!t) return;
+  const c = t.cards.find(c => c.id === cardId);
+  if (!c) return;
+  if (!c.fields) c.fields = {};
+  c.fields[fieldKey] = value;
+  scheduleSave();
+};
+
+window.deleteCard = function(topicId, cardId) {
+  if (!isMaster) return;
+  if (!confirm('Supprimer cette carte ?')) return;
+  const t = meetingState.topics.find(t => t.id === topicId);
+  if (!t) return;
+  const c = t.cards.find(c => c.id === cardId);
+  if (c) addActivity(`a supprimé "${c.title}"`);
+  t.cards = t.cards.filter(c => c.id !== cardId);
+  scheduleSave();
+  renderActiveTopic();
+  renderTopicsNav();
+};
+
+window.deleteTopic = function(topicId) {
+  if (!isMaster) return;
+  if (!confirm('Supprimer ce sujet et toutes ses cartes ?')) return;
+  const t = meetingState.topics.find(t => t.id === topicId);
+  if (t) addActivity(`a supprimé le sujet "${t.name}"`);
+  meetingState.topics = meetingState.topics.filter(t => t.id !== topicId);
+  if (activeTopicId === topicId) activeTopicId = meetingState.topics[0]?.id || null;
+  scheduleSave();
+  renderMeetingLive();
+};
+
+window.sendChat = function() {
+  const input = $('chatInput');
+  const txt = input.value.trim();
+  if (!txt) return;
+  if (!meetingState.chat) meetingState.chat = [];
+  meetingState.chat.push({ id: uniqueId('m'), author: userName, text: txt, time: new Date().toISOString() });
+  input.value = '';
+  renderChatList();
+  // Si je suis maître, je sauve. Si je suis viewer, je dois aussi pouvoir envoyer.
+  // → on autorise tout le monde à modifier le chat, peu importe le rôle
+  scheduleSave();
+};
+
+window.openAddTopic = function() {
+  if (!isMaster) return;
+  $('addTopicModal').classList.add('open');
+  $('newTopicName').focus();
+};
+window.closeAddTopic = function() {
+  $('addTopicModal').classList.remove('open');
+  $('newTopicName').value = '';
+};
+window.confirmAddTopic = function() {
+  const name = $('newTopicName').value.trim();
+  const type = $('newTopicType').value;
+  if (!name) { $('newTopicName').focus(); return; }
+  const id = uniqueId('topic');
+  meetingState.topics.push({ id, name, desc: '', type, cards: [] });
+  activeTopicId = id;
+  addActivity(`a ajouté le sujet "${name}"`);
+  closeAddTopic();
+  scheduleSave();
+  renderMeetingLive();
+};
+
+function addActivity(what) {
+  if (!meetingState) return;
+  if (!meetingState.activity) meetingState.activity = [];
+  meetingState.activity.push({ who: userName, what, time: new Date().toISOString() });
+}
+
+// ═══════════════════════════════════════════
+//  END MEETING
+// ═══════════════════════════════════════════
+window.openEndMeeting = function() {
+  if (!isMaster) return;
+  $('endMeetingModal').classList.add('open');
+};
+window.closeEndMeeting = function() {
+  $('endMeetingModal').classList.remove('open');
+};
+window.confirmEndMeeting = async function() {
+  const btn = $('endMeetingConfirmBtn');
+  btn.disabled = true;
+  btn.textContent = 'Archivage en cours…';
+  
+  // S'assurer que le dernier état est sauvé
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  
+  addActivity('a clôturé la réunion');
+  
+  try {
+    const body = {
+      action: 'endMeeting',
+      sessionId: meetingState.sessionId,
+      state: meetingState,
+      user: userName
+    };
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    
+    closeEndMeeting();
+    
+    // Modal succès
+    const url = json.docUrl;
+    const docTitle = json.docTitle;
+    $('endMeetingBody').innerHTML = `
+      <div style="text-align: center; padding: 8px;">
+        <div style="width: 56px; height: 56px; background: var(--green); color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px;">✓</div>
+        <div style="font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 8px;">Réunion archivée</div>
+        <p style="font-size: 13px; color: var(--ink-mid); margin-bottom: 16px;">
+          Brouillon créé : <strong>${escapeHtml(docTitle)}</strong>
+        </p>
+        <a href="${url}" target="_blank" class="btn btn-primary" style="display: inline-block; text-decoration: none;">Ouvrir le brouillon ↗</a>
+      </div>
+    `;
+    document.querySelector('#endMeetingModal .modal-footer').innerHTML = `
+      <button class="btn btn-ghost btn-sm" onclick="closeEndMeeting(); resetLobby();">Retour à l'accueil</button>
+    `;
+    document.querySelector('#endMeetingModal').classList.add('open');
+    
+    meetingState = null;
+    isMaster = false;
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Terminer & archiver';
+    alert('Erreur lors de l\'archivage : ' + err.message);
+  }
+};
+window.resetLobby = function() {
+  lobbyPresents = new Set();
+  lobbyMaster = null;
+  refreshMeeting();
+};
+
+// ═══════════════════════════════════════════
+//  SAVE (debounced)
+// ═══════════════════════════════════════════
+function scheduleSave(delay = SAVE_DEBOUNCE_MS) {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => doSave(), delay);
+}
+async function doSave() {
+  if (!meetingState) return;
+  if (isSaving) { scheduleSave(500); return; }
+  isSaving = true;
+  showSaving('saving');
+  try {
+    const body = {
+      action: 'saveMeeting',
+      sessionId: meetingState.sessionId,
+      state: meetingState,
+      user: userName
+    };
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    showSaving('saved');
+  } catch (err) {
+    console.error('Save error:', err);
+    showSaving('error');
+  } finally {
+    isSaving = false;
+  }
+}
+
+// ═══════════════════════════════════════════
+//  POLLING
+// ═══════════════════════════════════════════
+function startMeetingPoll() {
+  stopMeetingPoll();
+  meetingPollTimer = setInterval(async () => {
+    if (currentPage !== 'meeting') return;
+    // Ne poll pas si on est maître et qu'on tape (évite d'écraser ses modifs)
+    const active = document.activeElement;
+    if (isMaster && active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && active.id !== 'chatInput') return;
+    
+    try {
+      const res = await fetch(API_URL + '?action=meeting');
+      const json = await res.json();
+      if (!json.ok) return;
+      const remote = json.state;
+      
+      // Si pas de session distante mais on en a une localement → elle a été close par quelqu'un
+      if ((!remote || !remote.started) && meetingState) {
+        meetingState = null;
+        renderMeetingLobby();
+        return;
+      }
+      // Pas de session ni d'un côté ni de l'autre → on est dans le lobby
+      if (!remote || !remote.started) return;
+      
+      // Si on a pas de session locale mais qu'il y en a une distante → on récupère
+      if (!meetingState) {
+        meetingState = remote;
+        isMaster = (userName === remote.master);
+        activeTopicId = remote.topics[0]?.id || null;
+        renderMeetingLive();
+        return;
+      }
+      
+      // Comparer hash : si différent, refresh (sauf si je suis maître et que c'est moi qui ai changé)
+      const remoteHash = JSON.stringify(remote);
+      const localHash = JSON.stringify(meetingState);
+      if (remoteHash !== localHash) {
+        // Préserver le focus si possible
+        const focusedId = document.activeElement?.id;
+        const focusedValue = document.activeElement?.value;
+        const focusedStart = document.activeElement?.selectionStart;
+        
+        meetingState = remote;
+        isMaster = (userName === remote.master);
+        if (!meetingState.topics.find(t => t.id === activeTopicId)) {
+          activeTopicId = meetingState.topics[0]?.id || null;
+        }
+        renderMeetingLive();
+        
+        // Restaurer focus
+        if (focusedId) {
+          const el = $(focusedId);
+          if (el) {
+            el.focus();
+            if (focusedValue !== undefined && el.value === focusedValue) {
+              try { el.selectionStart = el.selectionEnd = focusedStart; } catch (e) {}
+            }
+          }
+        }
+      }
+    } catch (err) {}
+  }, MEETING_POLL_MS);
+}
+function stopMeetingPoll() {
+  if (meetingPollTimer) { clearInterval(meetingPollTimer); meetingPollTimer = null; }
+}
+
+// ═══════════════════════════════════════════
+//  KEYBOARD
+// ═══════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    setPage('search');
+    $('searchInput').focus();
+    $('searchInput').select();
+  }
+  if (e.key === 'Escape') {
+    closeAddTopic();
+    closeEndMeeting();
+  }
+});
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+loadSettings();
+if (!userName) {
+  userName = prompt('Bienvenue !\n\nTon prénom ?\n(Tu pourras le changer dans les paramètres.)') || 'Anonyme';
+  saveSettingsLocal();
+}
+$('userModeName').textContent = userName;
+renderUserAvatars();
+fetchSearch();
+</script>
+
+</body>
+</html>
