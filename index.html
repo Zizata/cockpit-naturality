@@ -1508,7 +1508,7 @@
 // ═══════════════════════════════════════════
 const API_URL = 'https://script.google.com/macros/s/AKfycbxp3Ch9lvOtu4uVLHZDR7r55nnxAy178gqZAfd7fsv4vltE2rw7he2I4Lgh18qDAt6F/exec';
 const AUTO_REFRESH_MS = 30000;
-const MEETING_POLL_MS = 4000;
+const MEETING_POLL_MS = 6000;
 const SAVE_DEBOUNCE_MS = 1200;
 
 // ═══════════════════════════════════════════
@@ -2312,7 +2312,11 @@ window.confirmEndMeeting = async function() {
       state: meetingState,
       user: userName
     };
-    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
+    const res = await fetch(API_URL, { 
+      method: 'POST', 
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error);
     
@@ -2369,7 +2373,11 @@ async function doSave() {
       state: meetingState,
       user: userName
     };
-    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
+    const res = await fetch(API_URL, { 
+      method: 'POST', 
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error);
     showSaving('saved');
