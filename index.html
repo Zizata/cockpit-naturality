@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1507,9 +1506,9 @@
 // ═══════════════════════════════════════════
 //  CONFIGURATION
 // ═══════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbzldB-K7QNdLwilwnX_wMCWheIIIJed970BZ0CrFbHUmLuZfUlPuain8S2mTqHV8tqW/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxp3Ch9lvOtu4uVLHZDR7r55nnxAy178gqZAfd7fsv4vltE2rw7he2I4Lgh18qDAt6F/exec';
 const AUTO_REFRESH_MS = 30000;
-const MEETING_POLL_MS = 4000;
+const MEETING_POLL_MS = 6000;
 const SAVE_DEBOUNCE_MS = 1200;
 
 // ═══════════════════════════════════════════
@@ -1582,41 +1581,6 @@ function showSaving(state) {
     el.className = 'saving-indicator error show'; txt.textContent = '⚠ Erreur';
     setTimeout(() => el.classList.remove('show'), 3000);
   }
-}
-
-
-async function apiPost(body) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(body)
-  });
-
-  const raw = await res.text();
-  let json;
-  try {
-    json = JSON.parse(raw);
-  } catch (e) {
-    throw new Error('Réponse non JSON du script : ' + raw.slice(0, 180));
-  }
-
-  if (!json.ok) {
-    throw new Error(json.error || 'Réponse API ok=false');
-  }
-
-  return json;
-}
-
-function showMeetingError(message) {
-  $('meetingBody').innerHTML = `
-    <div class="empty">
-      <div class="empty-emoji">⚠</div>
-      <div class="empty-title">Réunion non synchronisée</div>
-      <div class="empty-text" style="max-width:620px;">
-        ${escapeHtml(message)}<br><br>
-        Le problème vient très probablement du Google Apps Script : il doit gérer <strong>action=meeting</strong>, <strong>saveMeeting</strong> et <strong>endMeeting</strong>.
-      </div>
-    </div>`;
 }
 
 // ═══════════════════════════════════════════
@@ -1729,7 +1693,7 @@ const TYPE_CONFIG = {
 async function fetchSearch() {
   setSyncStatus('loading', 'Sync…');
   try {
-    const res = await fetch(API_URL + '?action=all&_=' + Date.now());
+    const res = await fetch(API_URL + '?action=all');
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || 'API error');
     searchData = json.data; searchMeta = json.meta || {};
@@ -1829,7 +1793,7 @@ const DEFAULT_TOPICS = [
 
 async function refreshMeeting() {
   try {
-    const res = await fetch(API_URL + '?action=meeting&_=' + Date.now());
+    const res = await fetch(API_URL + '?action=meeting');
     const json = await res.json();
     if (!json.ok) throw new Error(json.error);
     const state = json.state;
@@ -2348,7 +2312,13 @@ window.confirmEndMeeting = async function() {
       state: meetingState,
       user: userName
     };
-    const json = await apiPost(body);
+    const res = await fetch(API_URL, { 
+      method: 'POST', 
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
     
     closeEndMeeting();
     
@@ -2392,8 +2362,8 @@ function scheduleSave(delay = SAVE_DEBOUNCE_MS) {
   saveTimer = setTimeout(() => doSave(), delay);
 }
 async function doSave() {
-  if (!meetingState) return false;
-  if (isSaving) { scheduleSave(500); return false; }
+  if (!meetingState) return;
+  if (isSaving) { scheduleSave(500); return; }
   isSaving = true;
   showSaving('saving');
   try {
@@ -2403,14 +2373,17 @@ async function doSave() {
       state: meetingState,
       user: userName
     };
-    await apiPost(body);
+    const res = await fetch(API_URL, { 
+      method: 'POST', 
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
     showSaving('saved');
-    return true;
   } catch (err) {
     console.error('Save error:', err);
     showSaving('error');
-    showMeetingError(err.message);
-    return false;
   } finally {
     isSaving = false;
   }
@@ -2428,7 +2401,7 @@ function startMeetingPoll() {
     if (isMaster && active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && active.id !== 'chatInput') return;
     
     try {
-      const res = await fetch(API_URL + '?action=meeting&_=' + Date.now());
+      const res = await fetch(API_URL + '?action=meeting');
       const json = await res.json();
       if (!json.ok) return;
       const remote = json.state;
