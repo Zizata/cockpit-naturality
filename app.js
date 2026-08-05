@@ -232,7 +232,6 @@ function setPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   $('page-' + page).classList.add('active');
   if (page === 'meetings' && window.Meetings) Meetings.load();
-  if (page === 'pilotage' && window.Pilotage) Pilotage.render();
 }
 
 /* ─────────── PAGE RECHERCHE (Google Sheets) ─────────── */
@@ -256,7 +255,6 @@ async function fetchSearch() {
     const total = Object.values(State.searchData).reduce((s, a) => s + a.length, 0);
     $('badgeSearch').textContent = total;
     renderSearch();
-    if (window.Pilotage) Pilotage.render();
   } catch (err) {
     $('searchSub').textContent = 'Google Drive injoignable';
     $('searchResults').innerHTML =
@@ -377,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Rafraîchissement des Sheets
   setInterval(() => {
-    if (['search', 'pilotage'].includes(State.page) && State.profile &&
+    if (State.page === 'search' && State.profile &&
         document.activeElement?.tagName !== 'INPUT') fetchSearch();
   }, CONFIG.SEARCH_REFRESH_MS);
 
