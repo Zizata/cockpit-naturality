@@ -1,23 +1,26 @@
 /* ══════════════════════════════════════════════════════
    COCKPIT NATURALITY · Module Pilotage
-   Jauges d'avancement · Deadlines · Semaine en cours
+   Jauges d'avancement · Deadlines · Ce qui presse
    Source unique : le Google Sheet "Tâches" (via Apps Script)
+
+   Ce fichier s'appuie sur les fonctions déjà présentes
+   dans index.html : $, escapeHtml, normalize, searchData.
    ══════════════════════════════════════════════════════ */
 
 const Pilotage = (() => {
 
   /* ─────────────────────────────────────────────
-     SEUL BLOC À MODIFIER À LA MAIN
-     Les dates des événements. Tout le reste est
-     calculé depuis le Sheet Tâches.
+     SEUL BLOC À MODIFIER À LA MAIN :
+     les dates des événements.
+     Tout le reste vient du Sheet Tâches.
      ───────────────────────────────────────────── */
   const EVENEMENTS = [
     { nom: "PJ'ESPORT",           date: '2026-10-24', lieu: "L'ARCADE · Port-Jérôme" },
     { nom: "Gravenchon GeekFest", date: '2027-02-06', lieu: 'Salle Charles Péguy'    }
   ];
 
-  const SEUIL_URGENT = 7;    // une échéance à moins de 7 jours passe en orange
-  const SEUIL_PROCHE = 21;   // horizon du bloc "Ce qui arrive"
+  const SEUIL_URGENT = 7;    // échéance à moins de 7 jours → orange
+  const SEUIL_PROCHE = 21;   // horizon du bloc "Ce qui arrive ensuite"
 
   /* Noms de colonnes acceptés : le Sheet peut évoluer sans casser le cockpit */
   const COLS = {
@@ -29,7 +32,8 @@ const Pilotage = (() => {
     prio:     ['Priorité', 'Priorite']
   };
 
-  const POLE_COULEURS = ['#6b3fa0', '#e8722a', '#2e7dca', '#2c9970', '#c89a2a', '#3db8e8', '#d94548'];
+  const COULEURS = ['#6b3fa0', '#e8722a', '#2e7dca', '#2c9970', '#c89a2a', '#3db8e8', '#d94548'];
+  const MOIS = ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'];
 
   /* ─────────── OUTILS ─────────── */
 
@@ -67,7 +71,7 @@ const Pilotage = (() => {
 
   /* Fait / En cours / À faire — tolérant sur l'orthographe */
   function etatOf(v) {
-    const s = norm(v);
+    const s = normalize(v);
     if (!s) return 'todo';
     if (/fait|termin|fini|ok|done|clotur|livr|valid/.test(s)) return 'done';
     if (/cours|wip|demarr|commenc|entam/.test(s))            return 'doing';
@@ -90,7 +94,7 @@ const Pilotage = (() => {
   /* ─────────── LECTURE DES TÂCHES ─────────── */
 
   function lireTaches() {
-    const rows = (State.searchData && State.searchData.taches) || [];
+    const rows = (typeof searchData !== 'undefined' && searchData.taches) || [];
 
     const diag = {
       total: rows.length,
@@ -104,44 +108,44 @@ const Pilotage = (() => {
     const taches = rows.map(r => {
       const d = parseDate(pick(r, COLS.echeance));
       return {
-        titre:  pick(r, COLS.titre) || '(sans titre)',
-        pole:   pick(r, COLS.pole)  || 'Non classé',
-        resp:   pick(r, COLS.resp)  || null,
-        prio:   pick(r, COLS.prio)  || null,
-        date:   d,
-        jours:  joursRestants(d),
-        etat:   etatOf(pick(r, COLS.etat))
+        titre: pick(r, COLS.titre) || '(sans titre)',
+        pole:  pick(r, COLS.pole)  || 'Non classé',
+        resp:  pick(r, COLS.resp)  || null,
+        prio:  pick(r, COLS.prio)  || null,
+        date:  d,
+        jours: joursRestants(d),
+        etat:  etatOf(pick(r, COLS.etat))
       };
     });
 
     return { taches, diag };
   }
 
-  /* Le badge de la nav ne s'affiche que s'il y a du retard */
+  function enRetard(t) { return t.etat !== 'done' && t.jours !== null && t.jours < 0; }
+  function urgente(t)  { return t.etat !== 'done' && t.jours !== null && t.jours >= 0 && t.jours <= SEUIL_URGENT; }
+
   function majBadge(n) {
-    const el = $('badgePilotage');
+    const el = $('badge-pilotage');
     if (!el) return;
     el.textContent = n || '';
     el.className = 'nav-badge' + (n ? ' urgent' : '');
     el.style.display = n ? '' : 'none';
   }
 
-  function enRetard(t) { return t.etat !== 'done' && t.jours !== null && t.jours < 0; }
-  function urgente(t)  { return t.etat !== 'done' && t.jours !== null && t.jours >= 0 && t.jours <= SEUIL_URGENT; }
-
   /* ─────────── RENDU ─────────── */
 
   function render() {
-    const { taches, diag } = lireTaches();
+    if (!$('page-pilotage')) return;
 
+    const { taches, diag } = lireTaches();
     renderCountdowns();
 
     if (!diag.total) {
-      $('pilotSub').textContent = 'Aucune tâche lue depuis le Sheet';
-      $('pilotWeek').innerHTML = `<div class="empty">
-        <div class="empty-ico">◷</div>
+      $('pilotSubtitle').textContent = 'Aucune tâche lue depuis le Drive';
+      $('pilotUrgent').innerHTML = `<div class="empty">
+        <div class="empty-emoji">◷</div>
         <div class="empty-title">Le Sheet Tâches est vide</div>
-        <div class="empty-text">Ajoute tes tâches dans <strong>Tâches 2027</strong> sur le Drive :
+        <div class="empty-text">Ajoute tes tâches dans le Sheet <strong>Tâches</strong> du Drive :
         une ligne par tâche, avec un <strong>Pôle</strong>, une <strong>Échéance</strong> et un <strong>État</strong>.
         Les jauges et les compteurs se remplissent tout seuls.</div>
       </div>`;
@@ -151,35 +155,34 @@ const Pilotage = (() => {
       return;
     }
 
-    const faites   = taches.filter(t => t.etat === 'done').length;
-    const retards  = taches.filter(enRetard).length;
-    const pct      = Math.round(faites / taches.length * 100);
+    const faites  = taches.filter(t => t.etat === 'done').length;
+    const retards = taches.filter(enRetard).length;
+    const pct     = Math.round(faites / taches.length * 100);
 
-    $('pilotSub').innerHTML = `<strong>${pct}%</strong> de l'ensemble · ${faites}/${taches.length} tâches faites`
+    $('pilotSubtitle').innerHTML =
+      `<strong>${pct}%</strong> de l'ensemble · ${faites}/${taches.length} tâches faites`
       + (retards ? ` · <span class="pi-late-txt">${retards} en retard</span>` : '');
-    majBadge(retards);
 
-    renderSemaine(taches, diag);
+    majBadge(retards);
+    renderUrgent(taches, diag);
     renderPoles(taches, diag);
     renderSuite(taches);
   }
 
-  /* Compte à rebours des événements */
   function renderCountdowns() {
     $('pilotCountdowns').innerHTML = EVENEMENTS.map((e, i) => {
       const d = parseDate(e.date);
       const j = joursRestants(d);
       const passe = j < 0;
-      return `<div class="pi-cd${passe ? ' passe' : ''}" style="--c:${POLE_COULEURS[i % POLE_COULEURS.length]}">
-        <div class="pi-cd-nom">${esc(e.nom)}</div>
+      return `<div class="pi-cd${passe ? ' passe' : ''}" style="--c:${COULEURS[i % COULEURS.length]}">
+        <div class="pi-cd-nom">${escapeHtml(e.nom)}</div>
         <div class="pi-cd-j">${passe ? 'terminé' : 'J-' + j}</div>
-        <div class="pi-cd-date">${dateCourte(d)} · ${esc(e.lieu)}</div>
+        <div class="pi-cd-date">${dateCourte(d)} · ${escapeHtml(e.lieu)}</div>
       </div>`;
     }).join('');
   }
 
-  /* Bloc « À traiter maintenant » : retards + échéances à 7 jours */
-  function renderSemaine(taches, diag) {
+  function renderUrgent(taches, diag) {
     const urgent = taches
       .filter(t => enRetard(t) || urgente(t))
       .sort((a, b) => a.jours - b.jours);
@@ -192,7 +195,7 @@ const Pilotage = (() => {
         <strong>Colonnes absentes du Sheet Tâches :</strong>
         ${diag.manquantes.map(k => `<code>${noms[k]}</code>`).join(' ')}
         — ajoute-les pour que les jauges et les compteurs fonctionnent.
-        <span class="pi-diag-sub">Colonnes lues actuellement : ${diag.colonnes.map(esc).join(' · ') || '—'}</span>
+        <span class="pi-diag-sub">Colonnes lues actuellement : ${diag.colonnes.map(escapeHtml).join(' · ') || '—'}</span>
       </div>`;
     }
 
@@ -203,53 +206,46 @@ const Pilotage = (() => {
         <span class="pi-block-hint">retards et échéances sous ${SEUIL_URGENT} jours</span>
       </div>`;
 
-    if (!urgent.length) {
-      html += `<div class="pi-calme">Rien d'urgent. Tout ce qui a une échéance est encore devant toi.</div>`;
-    } else {
-      html += '<div class="pi-rows">' + urgent.map(ligne).join('') + '</div>';
-    }
+    html += urgent.length
+      ? '<div class="pi-rows">' + urgent.map(ligne).join('') + '</div>'
+      : `<div class="pi-calme">Rien d'urgent. Tout ce qui a une échéance est encore devant toi.</div>`;
 
     html += '</div>';
-    $('pilotWeek').innerHTML = html;
+    $('pilotUrgent').innerHTML = html;
   }
 
   function ligne(t) {
-    const late = enRetard(t);
-    const cls  = late ? 'late' : (urgente(t) ? 'soon' : '');
-    const meta = [t.pole, t.resp].filter(Boolean).map(esc).join(' · ');
+    const cls  = enRetard(t) ? 'late' : (urgente(t) ? 'soon' : '');
+    const meta = [t.pole, t.resp].filter(Boolean).map(escapeHtml).join(' · ');
+    const etat = t.etat === 'doing' ? 'en cours' : t.etat === 'done' ? 'fait' : 'à faire';
     return `<div class="pi-row ${cls}">
       <div class="pi-row-when">${libelleJours(t.jours)}</div>
       <div class="pi-row-body">
-        <div class="pi-row-title">${esc(t.titre)}</div>
+        <div class="pi-row-title">${escapeHtml(t.titre)}</div>
         <div class="pi-row-meta">${meta || '—'}${t.date ? ' · ' + dateCourte(t.date) : ''}</div>
       </div>
-      <div class="pi-row-etat e-${t.etat}">${t.etat === 'doing' ? 'en cours' : t.etat === 'done' ? 'fait' : 'à faire'}</div>
+      <div class="pi-row-etat e-${t.etat}">${etat}</div>
     </div>`;
   }
 
-  /* Jauges par pôle */
   function renderPoles(taches, diag) {
     const map = {};
-    taches.forEach(t => {
-      (map[t.pole] = map[t.pole] || []).push(t);
-    });
-
+    taches.forEach(t => { (map[t.pole] = map[t.pole] || []).push(t); });
     const poles = Object.keys(map).sort((a, b) => map[b].length - map[a].length);
 
     const cartes = poles.map((nom, i) => {
-      const list  = map[nom];
-      const done  = list.filter(t => t.etat === 'done').length;
-      const doing = list.filter(t => t.etat === 'doing').length;
-      const todo  = list.length - done - doing;
-      const late  = list.filter(enRetard).length;
+      const list   = map[nom];
+      const done   = list.filter(t => t.etat === 'done').length;
+      const doing  = list.filter(t => t.etat === 'doing').length;
+      const todo   = list.length - done - doing;
+      const late   = list.filter(enRetard).length;
       const pDone  = done / list.length * 100;
       const pDoing = doing / list.length * 100;
-      const couleur = POLE_COULEURS[i % POLE_COULEURS.length];
 
-      return `<div class="pi-pole" style="--c:${couleur}">
+      return `<div class="pi-pole" style="--c:${COULEURS[i % COULEURS.length]}">
         <div class="pi-pole-head">
           <span class="pi-pole-dot"></span>
-          <span class="pi-pole-nom">${esc(nom)}</span>
+          <span class="pi-pole-nom">${escapeHtml(nom)}</span>
           <span class="pi-pole-pct">${Math.round(pDone)}%</span>
         </div>
         <div class="pi-bar">
@@ -275,7 +271,6 @@ const Pilotage = (() => {
     </div>`;
   }
 
-  /* Ce qui arrive ensuite */
   function renderSuite(taches) {
     const suite = taches
       .filter(t => t.etat !== 'done' && t.jours !== null && t.jours > SEUIL_URGENT && t.jours <= SEUIL_PROCHE)
@@ -302,15 +297,18 @@ const Pilotage = (() => {
     $('pilotNext').innerHTML = html;
   }
 
-  /* ─────────── INIT ─────────── */
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = $('pilotRefresh');
-    if (btn) btn.addEventListener('click', () => {
-      toast('Relecture du Drive…', 'work');
-      fetchSearch().then(() => { hideToast(); render(); });
-    });
-  });
+  /* ─────────── INIT ───────────
+     index.html appelle fetchSearch() avant que ce fichier soit chargé :
+     si les données sont déjà arrivées, on affiche tout de suite. */
+  if (document.readyState !== 'loading') {
+    setTimeout(render, 0);
+  } else {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(render, 0));
+  }
 
   return { render };
 })();
+
+/* Important : une déclaration `const` au niveau global ne crée PAS window.Pilotage.
+   index.html teste `window.Pilotage` avant d'appeler le rendu — on l'expose donc ici. */
+window.Pilotage = Pilotage;

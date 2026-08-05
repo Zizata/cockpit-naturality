@@ -1286,6 +1286,139 @@
   .saving-indicator.saving .dot { background: var(--amber); animation: pulse 1s infinite; }
   .saving-indicator.error .dot { background: var(--red); }
 
+  /* ═══════════ PILOTAGE ═══════════ */
+  .nav-badge.urgent { background: var(--red); color: #fff; }
+  .nav-link.active .nav-badge.urgent { background: var(--red); color: #fff; }
+
+  .pi-cd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .pi-cd {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--c);
+    border-radius: 11px;
+    padding: 15px 17px;
+  }
+  .pi-cd.passe { opacity: 0.45; }
+  .pi-cd-nom {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.4px;
+    font-weight: 700; color: var(--ink-soft);
+  }
+  .pi-cd-j {
+    font-family: 'Fraunces', serif; font-size: 30px; font-weight: 600;
+    letter-spacing: -1px; color: var(--c); line-height: 1.15; margin: 3px 0 1px;
+  }
+  .pi-cd-date { font-size: 12px; color: var(--ink-mid); }
+
+  .pi-block {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px 20px;
+    margin-bottom: 18px;
+  }
+  .pi-block-head {
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .pi-block-title {
+    font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600;
+    color: var(--ink); letter-spacing: -0.3px;
+  }
+  .pi-h-hint {
+    font-family: 'Inter Tight', sans-serif; font-size: 12px;
+    font-weight: 400; color: var(--ink-faint); letter-spacing: 0;
+  }
+  .pi-block-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    background: var(--bg-warm); color: var(--ink-mid);
+    padding: 2px 8px; border-radius: 5px;
+  }
+  .pi-block-count.on { background: var(--red); color: #fff; }
+  .pi-block-hint { font-size: 11px; color: var(--ink-faint); margin-left: auto; }
+
+  .pi-rows { display: flex; flex-direction: column; gap: 1px; }
+  .pi-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 12px; border-radius: 8px;
+    border-left: 3px solid var(--line-strong);
+    background: var(--bg-soft);
+  }
+  .pi-row.late { border-left-color: var(--red); background: rgba(217, 69, 72, 0.05); }
+  .pi-row.soon { border-left-color: var(--amber); }
+  .pi-row-when {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    color: var(--ink-mid); min-width: 78px; flex-shrink: 0;
+  }
+  .pi-row.late .pi-row-when { color: var(--red); }
+  .pi-row.soon .pi-row-when { color: var(--amber); }
+  .pi-row-body { flex: 1; min-width: 0; }
+  .pi-row-title {
+    font-size: 14px; font-weight: 550; color: var(--ink);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pi-row-meta { font-size: 11.5px; color: var(--ink-soft); margin-top: 1px; }
+  .pi-row-etat {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.9px;
+    font-weight: 700; padding: 3px 8px; border-radius: 5px; flex-shrink: 0;
+  }
+  .e-todo  { background: var(--bg-warm);        color: var(--ink-mid); }
+  .e-doing { background: rgba(46,125,202,0.12); color: var(--blue); }
+  .e-done  { background: rgba(44,153,112,0.12); color: var(--green); }
+
+  .pi-poles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .pi-pole {
+    border: 1px solid var(--line-soft); border-radius: 10px;
+    padding: 14px 15px; background: var(--bg-soft);
+  }
+  .pi-pole-head { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .pi-pole-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex-shrink: 0; }
+  .pi-pole-nom { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .pi-pole-pct {
+    margin-left: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 14px; font-weight: 700; color: var(--c);
+  }
+  .pi-bar {
+    height: 8px; background: var(--bg-warm);
+    border-radius: 4px; overflow: hidden; display: flex;
+  }
+  .pi-bar-done  { background: var(--c); transition: width 0.4s ease; }
+  .pi-bar-doing { background: var(--c); opacity: 0.32; transition: width 0.4s ease; }
+  .pi-pole-foot {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;
+    font-size: 11px; color: var(--ink-soft);
+  }
+  .pi-late-txt { color: var(--red); font-weight: 700; }
+
+  .pi-calme {
+    font-size: 13px; color: var(--ink-soft); padding: 14px 12px;
+    background: var(--bg-soft); border-radius: 8px;
+  }
+  .pi-nodate {
+    margin-top: 12px; font-size: 11.5px; color: var(--ink-faint);
+    padding-top: 11px; border-top: 1px dashed var(--line);
+  }
+  .pi-diag {
+    background: rgba(200,154,42,0.10);
+    border: 1px solid rgba(200,154,42,0.35);
+    border-radius: 10px; padding: 12px 15px;
+    font-size: 12.5px; color: var(--ink-mid); margin-bottom: 18px;
+  }
+  .pi-diag code {
+    font-family: 'JetBrains Mono', monospace; background: var(--card);
+    padding: 1px 6px; border-radius: 4px; font-size: 11px;
+    font-weight: 700; color: var(--ink);
+  }
+  .pi-diag-sub { display: block; margin-top: 6px; font-size: 11px; color: var(--ink-soft); }
+
   @media (max-width: 1000px) {
     .meeting-layout { grid-template-columns: 1fr; }
     .meeting-sidebar { order: 2; }
@@ -1328,6 +1461,11 @@
   <aside>
     <div class="nav-section">
       <div class="nav-section-label">Navigation</div>
+      <div class="nav-link" data-page="pilotage">
+        <div class="nav-icon">◈</div>
+        <div>Pilotage</div>
+        <div class="nav-badge" id="badge-pilotage" style="display:none"></div>
+      </div>
       <div class="nav-link active" data-page="search">
         <div class="nav-icon">⌕</div>
         <div>Recherche</div>
@@ -1347,9 +1485,6 @@
     <div class="nav-section">
       <div class="nav-section-label">À venir</div>
       <div class="nav-link disabled">
-        <div class="nav-icon">⊞</div><div>Dashboard</div>
-      </div>
-      <div class="nav-link disabled">
         <div class="nav-icon">€</div><div>Budget</div>
       </div>
     </div>
@@ -1364,6 +1499,25 @@
   <main>
 
     <!-- ═══ RECHERCHE ═══ -->
+    <!-- ═══ PILOTAGE ═══ -->
+    <div class="page" id="page-pilotage">
+      <div class="page-header">
+        <div class="page-title">Pilotage</div>
+        <div class="page-subtitle" id="pilotSubtitle">Chargement…</div>
+      </div>
+      <div class="page-body">
+        <div class="pi-cd-grid" id="pilotCountdowns"></div>
+        <div id="pilotUrgent">
+          <div class="loading-state">
+            <div class="loading-pulse"></div>
+            <div class="loading-title">Lecture du Drive…</div>
+          </div>
+        </div>
+        <div id="pilotPoles"></div>
+        <div id="pilotNext"></div>
+      </div>
+    </div>
+
     <div class="page active" id="page-search">
       <div class="page-header">
         <div class="page-title">Recherche universelle</div>
@@ -1674,6 +1828,7 @@ function setPage(page) {
     stopMeetingPoll();
   }
   if (page === 'settings') renderSettings();
+  if (page === 'pilotage' && window.Pilotage) Pilotage.render();
 }
 document.querySelectorAll('.nav-link[data-page]').forEach(link => {
   link.addEventListener('click', () => setPage(link.dataset.page));
@@ -1701,6 +1856,7 @@ async function fetchSearch() {
     $('badge-search').textContent = total;
     setSyncStatus('ok', new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'}));
     renderSearch();
+    if (window.Pilotage) Pilotage.render();
   } catch (err) {
     setSyncStatus('error', 'Erreur');
     $('searchResults').innerHTML = `<div class="empty"><div class="empty-emoji">⚠</div><div class="empty-title">Erreur de connexion</div><div class="empty-text">${escapeHtml(err.message)}</div></div>`;
@@ -2486,6 +2642,8 @@ $('userModeName').textContent = userName;
 renderUserAvatars();
 fetchSearch();
 </script>
+
+<script src="pilotage.js"></script>
 
 </body>
 </html>
